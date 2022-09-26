@@ -1,20 +1,22 @@
-import webScripts from './webScripts.json' assert { type: 'json' };
+import manifest from './plugins/manifest.json' assert { type: 'json' };
 
-const WebWorker = new Worker('webworker.js');
-let count = 0;
+const WebWorker = new Worker('pluginRunner.js');
 
-WebWorker.postMessage(webScripts);
-updateShowCount();
-
-function updateShowCount() {
-	showCount.textContent = count;
-}
-
-btnIncCount.addEventListener('click', () => {
-	WebWorker.postMessage(count);
-});
+WebWorker.postMessage(manifest);
 
 WebWorker.onmessage = e => {
-	count = e.data;
-	updateShowCount();
+	const result = e.data;
+	divResult.textContent = result;
 };
+
+buttons.innerHTML = Object.keys(manifest)
+	.map(btnText => `<button data-func="${btnText}">${btnText}</button>`)
+	.join('');
+
+buttons.addEventListener('click', evt => {
+	WebWorker.postMessage({
+		method: evt.target.textContent,
+		num1: +num1.value,
+		num2: +num2.value,
+	});
+});
